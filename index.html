@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For You, Forever ♡</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden}
+body{
+  background:#05030a;color:#fff;
+  font-family:Georgia,"Times New Roman",serif;
+}
+canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+.vignette{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(circle at 50% 45%,rgba(255,72,150,.12),transparent 35%),
+             radial-gradient(circle at 50% 50%,transparent 30%,rgba(0,0,0,.78) 100%);
+}
+.wrap{
+  position:relative;z-index:2;width:100%;height:100%;
+  display:flex;align-items:center;justify-content:center;padding:22px;
+}
+.card{
+  width:min(760px,94vw);max-height:92vh;overflow:auto;
+  padding:42px 30px 30px;text-align:center;
+  border:1px solid rgba(255,255,255,.11);border-radius:30px;
+  background:rgba(12,7,19,.54);
+  box-shadow:0 25px 100px rgba(0,0,0,.6),0 0 90px rgba(255,50,140,.08);
+  backdrop-filter:blur(12px);
+}
+.eyebrow{
+  font:11px Arial,sans-serif;letter-spacing:5px;text-transform:uppercase;
+  opacity:.55;margin-bottom:17px;
+}
+h1{
+  font-size:clamp(42px,9vw,78px);line-height:.96;font-weight:400;
+  letter-spacing:-2px;text-shadow:0 0 32px rgba(255,100,180,.35);
+}
+.subtitle{
+  max-width:610px;margin:20px auto 0;
+  font-size:clamp(15px,3vw,19px);line-height:1.8;opacity:.82;
+}
+.heart{
+  width:104px;height:104px;margin:34px auto 24px;
+  position:relative;transform:rotate(-45deg);
+  animation:beat 1.35s ease-in-out infinite;
+  filter:drop-shadow(0 0 27px rgba(255,50,140,.58));
+}
+.heart:before,.heart:after,.core{
+  content:"";position:absolute;width:104px;height:104px;border-radius:50%;
+  background:linear-gradient(135deg,#ff9dcc,#ff2f83 62%,#a9004c);
+}
+.heart:before{top:-52px}.heart:after{left:52px}.core{inset:0}
+.heart span{
+  position:absolute;z-index:3;inset:0;display:flex;align-items:center;justify-content:center;
+  transform:rotate(45deg);font:700 11px Arial,sans-serif;white-space:nowrap;
+  margin:8px 0 0 -6px;
+}
+@keyframes beat{
+  0%,100%{transform:rotate(-45deg) scale(1)}
+  10%{transform:rotate(-45deg) scale(1.09)}
+  20%{transform:rotate(-45deg) scale(1)}
+  30%{transform:rotate(-45deg) scale(1.06)}
+}
+#typed{font-size:18px;line-height:1.7;opacity:.9}
+.cursor{
+  display:inline-block;width:1px;height:1em;background:#fff;
+  vertical-align:-2px;margin-left:3px;animation:blink .7s infinite;
+}
+@keyframes blink{50%{opacity:0}}
+
+.actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:25px}
+button{
+  border:1px solid rgba(255,255,255,.17);background:rgba(255,255,255,.07);
+  color:#fff;border-radius:999px;padding:13px 22px;cursor:pointer;
+  font:600 13px Arial,sans-serif;transition:.25s;
+}
+button:hover{transform:translateY(-2px);background:rgba(255,70,150,.17)}
+.song{
+  margin:20px auto 0;width:min(540px,90vw);
+  max-height:0;overflow:hidden;opacity:0;transition:.65s ease;
+}
+.song.open{max-height:180px;opacity:1}
+iframe{width:100%;height:152px;border:0;border-radius:14px}
+.letter{
+  max-width:620px;margin:25px auto 0;
+  text-align:left;line-height:1.9;font-size:17px;
+  opacity:0;transform:translateY(15px);max-height:0;overflow:hidden;
+  transition:1s ease;
+}
+.letter.open{opacity:.94;transform:none;max-height:650px}
+.letter p{margin-bottom:15px}
+.signature{text-align:right;font-style:italic;opacity:.8;margin-top:22px}
+.footer{margin-top:22px;font:10px Arial,sans-serif;letter-spacing:2px;opacity:.38}
+
+.countdown{
+  position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;
+  background:#05030a;transition:.9s ease;
+}
+.countdown.hide{opacity:0;visibility:hidden}
+.count-number{
+  font:700 clamp(100px,25vw,230px)/1 Arial,sans-serif;
+  text-shadow:0 0 55px rgba(255,80,170,.7);animation:pop .9s ease;
+}
+@keyframes pop{0%{transform:scale(.35);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+
+.toast{
+  position:fixed;left:50%;bottom:25px;z-index:20;
+  transform:translate(-50%,20px);opacity:0;pointer-events:none;
+  padding:11px 17px;border-radius:999px;
+  background:rgba(15,8,22,.9);border:1px solid rgba(255,255,255,.12);
+  font:12px Arial,sans-serif;transition:.3s;
+}
+.toast.show{transform:translate(-50%,0);opacity:1}
+
+@media(max-width:560px){
+ .card{padding:32px 18px 25px}
+ .heart{width:90px;height:90px}
+ .heart:before,.heart:after,.core{width:90px;height:90px}
+ .heart:before{top:-45px}.heart:after{left:45px}
+ .heart span{font-size:10px}
+ .letter{font-size:15px}
+}
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<div class="vignette"></div>
+
+<div class="countdown" id="countdown">
+  <div class="count-number" id="countNumber">3</div>
+</div>
+
+<main class="wrap">
+<section class="card">
+  <div class="eyebrow">for the person who stayed</div>
+  <h1>For You, Forever.</h1>
+
+  <div class="heart">
+    <div class="core"></div>
+    <span>I LOVE YOU</span>
+  </div>
+
+  <div id="typed"></div><span class="cursor"></span>
+
+  <div class="actions">
+    <button id="openBtn">Open my heart ♡</button>
+  </div>
+
+  <div class="song" id="song">
+    <iframe
+      id="spotify"
+      src="https://open.spotify.com/embed/track/35o9a4iAfLl5jRmqMX9c1D?utm_source=generator&autoplay=1"
+      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+      loading="eager">
+    </iframe>
+  </div>
+
+  <div class="letter" id="letter">
+    <p>
+      Sayang,
+    </p>
+    <p>
+      Makasih ya, udah bertahan sejauh ini. Makasih karena di antara
+      banyak hal yang mungkin nggak selalu mudah, kamu masih memilih
+      untuk tetap tinggal, tetap bersama, dan tetap berjalan sama aku.
+    </p>
+    <p>
+      Aku mungkin nggak selalu bisa menemukan kata yang paling indah
+      untuk menjelaskan apa yang aku rasakan. Tapi satu hal yang aku
+      tahu, kehadiran kamu punya tempat yang berbeda di hidup aku.
+      Kamu bukan cuma seseorang yang aku sayang, tapi seseorang yang
+      ingin terus aku temui di hari-hari yang akan datang.
+    </p>
+    <p>
+      Kalau nanti ada hari yang berat, semoga kita nggak memilih untuk
+      saling meninggalkan. Kalau ada hari yang bahagia, semoga kita
+      masih bisa tertawa dan menikmatinya bersama.
+    </p>
+    <p>
+      Jadi... jangan cuma bertahan sampai hari ini, ya?
+      <strong>Terus bersama aku. Selama-lamanya.</strong>
+    </p>
+    <p>
+      Terima kasih sudah menjadi bagian dari perjalanan ini.
+      Terima kasih sudah tetap di sini.
+      Dan kalau aku boleh meminta satu hal untuk masa depan,
+      aku cuma ingin tetap punya kamu di dalamnya.
+    </p>
+    <p class="signature">
+      With all my heart,<br>
+      someone who will always choose you. ♡
+    </p>
+  </div>
+
+  <div class="footer">one song • one story • one forever ♡</div>
+</section>
+</main>
+
+<div class="toast" id="toast">Makasih sudah tetap di sini. ♡</div>
+
+<script>
+const canvas=document.getElementById("canvas"),ctx=canvas.getContext("2d");
+let W,H,particles=[];
+function resize(){
+  W=innerWidth;H=innerHeight;
+  const d=devicePixelRatio||1;
+  canvas.width=W*d;canvas.height=H*d;canvas.style.width=W+"px";canvas.style.height=H+"px";
+  ctx.setTransform(d,0,0,d,0,0);
+  particles=Array.from({length:Math.min(260,Math.floor(W/3.5))},()=>({
+    x:Math.random()*W,y:Math.random()*H,s:.25+Math.random()*1.2,
+    r:.5+Math.random()*1.7,a:.15+Math.random()*.7,d:(Math.random()-.5)*.25
+  }));
+}
+addEventListener("resize",resize);resize();
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  for(const p of particles){
+    p.y+=p.s;p.x+=p.d;
+    if(p.y>H+5){p.y=-5;p.x=Math.random()*W}
+    ctx.beginPath();
+    ctx.fillStyle=`rgba(255,${125+Math.random()*80},${190+Math.random()*60},${p.a})`;
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+
+const countdown=document.getElementById("countdown"),num=document.getElementById("countNumber");
+let n=3;
+const cd=setInterval(()=>{
+  n--;
+  if(n>0){
+    num.textContent=n;num.style.animation="none";void num.offsetWidth;num.style.animation="pop .9s ease";
+  }else{
+    clearInterval(cd);countdown.classList.add("hide");startTyping();
+    // The Spotify iframe is configured with autoplay=1.
+    // Browsers may still require one user interaction before allowing sound.
+  }
+},900);
+
+const lines=[
+  "Some people become a chapter. You became my home.",
+  "Makasih sudah bertahan sejauh ini... dan masih memilih aku.",
+  "Kalau boleh, mari terus bersama. Bukan cuma hari ini, tapi selamanya."
+];
+let li=0,ci=0;
+const typed=document.getElementById("typed");
+function startTyping(){typeLine()}
+function typeLine(){
+  const line=lines[li];
+  if(ci<line.length){typed.textContent+=line[ci++];setTimeout(typeLine,42)}
+  else setTimeout(()=>{typed.textContent="";ci=0;li=(li+1)%lines.length;typeLine()},2600)
+}
+
+const openBtn=document.getElementById("openBtn");
+const letter=document.getElementById("letter");
+const song=document.getElementById("song");
+const toast=document.getElementById("toast");
+
+openBtn.addEventListener("click",()=>{
+  letter.classList.toggle("open");
+  song.classList.toggle("open");
+  openBtn.textContent=letter.classList.contains("open")?"Close my heart ♡":"Open my heart ♡";
+  toast.textContent=letter.classList.contains("open")
+    ?"Makasih sudah tetap bersama aku. Selamanya, ya? ♡"
+    :"Come back when you're ready. ♡";
+  toast.classList.add("show");
+  setTimeout(()=>toast.classList.remove("show"),2600);
+});
+</script>
+</body>
+</html>
